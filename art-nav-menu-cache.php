@@ -36,21 +36,27 @@ class Art_Nav_Menu_Cache {
 
 	protected function get_menu_object( $args ) {
 
-
 		$locations = get_nav_menu_locations();
+		$menu_obj  = false;
 
-		return wp_get_nav_menu_object( $locations[ $args->theme_location ] );
+		if ( $args->theme_location ) {
+			$menu_obj = wp_get_nav_menu_object( $locations[ $args->theme_location ] );
+		}
+
+		return $menu_obj;
 	}
 
 
 	protected function get_menu_parent( $args ) {
 
-		$items = wp_get_nav_menu_items( $this->get_menu_object( $args ) );
+		$items   = wp_get_nav_menu_items( $this->get_menu_object( $args ) );
 		$parents = [];
 
-		foreach ( $items as $item ) {
-			if ( (int) $item->menu_item_parent === 0 ) {
-				$parents[] = $item->object_id;
+		if ( ! empty( $items ) ) {
+			foreach ( $items as $item ) {
+				if ( (int) $item->menu_item_parent === 0 ) {
+					$parents[] = $item->object_id;
+				}
 			}
 		}
 
@@ -72,7 +78,7 @@ class Art_Nav_Menu_Cache {
 		global $wp_query;
 
 		$_queried_object_id = 0;
-		$queried_object_id = empty( $wp_query->queried_object_id ) ? 0 : (int) $wp_query->queried_object_id;
+		$queried_object_id  = empty( $wp_query->queried_object_id ) ? 0 : (int) $wp_query->queried_object_id;
 
 		if ( in_array( (int) $queried_object_id, $this->get_menu_parent( $args ), true ) ) {
 			$_queried_object_id = $queried_object_id;
@@ -141,7 +147,7 @@ class Art_Nav_Menu_Cache {
 			set_transient( 'MC-' . $args->theme_location . '-updated', time() );
 		}
 
-		$key = $this->get_menu_key( $args );
+		$key  = $this->get_menu_key( $args );
 		$data = [ 'time' => time(), 'data' => $nav ];
 
 		set_transient( $key, $data, $this->cache_time );
